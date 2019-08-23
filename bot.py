@@ -4,9 +4,12 @@ from sc2.constants import NEXUS, PROBE, PYLON, ASSIMILATOR, GATEWAY,\
 import random
 
 class DoctorBlinch_Protoss_Bot(sc2.BotAI):
-
+    def __init__(self):
+        self.ITERATIONS_PER_MINUTE = 165
+        self.MAX_PROBES = 62
 
     async def on_step(self, iteration):
+        self.iteration = iteration
 
         await self.distribute_workers()
         await self.build_workers()
@@ -96,8 +99,9 @@ class DoctorBlinch_Protoss_Bot(sc2.BotAI):
                     await self.do(rf.train(IMMORTAL))
 
     async def build_workers(self):
-        #print(self.units(PROBE).amount)
-        if self.units(PROBE).amount >= self.units(NEXUS).amount * 14 + self.units(ASSIMILATOR).amount * 3:
+        if self.units(PROBE).amount >= self.MAX_PROBES:
+            return
+        if self.units(PROBE).amount >= self.units(NEXUS).amount * 15 + self.units(ASSIMILATOR).amount * 3:
             return
         for nexus in self.units(NEXUS).ready.noqueue:
             if self.can_afford(PROBE):
@@ -128,5 +132,5 @@ class DoctorBlinch_Protoss_Bot(sc2.BotAI):
                     await self.do(worker.build(ASSIMILATOR, vaspene))
 
     async def expand(self):
-        if self.units(NEXUS).amount < 3 and self.can_afford(NEXUS):
+        if self.units(NEXUS).amount < (self.iteration / self.ITERATIONS_PER_MINUTE)/4 and self.can_afford(NEXUS):
             await self.expand_now()
